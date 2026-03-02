@@ -1,0 +1,65 @@
+# Сборка
+build/
+*/build/
+cmake-build-*/
+out/
+
+# Скомпилированные файлы
+*.o
+*.so
+*.dll
+*.exe
+*.out
+*.app
+
+# Результаты тестов
+*.log
+*.tap
+*.trs
+Testing/
+test_report.xml
+coverage/
+*.gcda
+*.gcno
+*.gcov
+
+# IDE
+.vscode/
+.claude/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+.cache/
+.project
+.classpath
+.cproject
+.settings/
+
+CLAUDE.md
+
+# Docker
+*.tar
+*.tar.gz
+*.tgz
+docker-compose.override.yml
+.DS_Store
+.dockerignore
+!docker-compose.yml
+
+# CI/CD
+.github/workspace/
+.env
+.env.local
+.env.*.local
+
+# Временные файлы
+*.tmp
+*.temp
+*.bak
+*.backup
+*.old
+*.pid
+*.lock
+todo.md

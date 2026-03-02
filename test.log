@@ -3,3 +3,13 @@
 [2025-10-13T14:54:34+03:00] [WARNING] [Thread:138298719224768] Warning message
 [2025-10-13T14:54:34+03:00] [ERROR] [Thread:138298719224768] Error message
 [2025-10-13T14:54:34+03:00] [INFO] [Thread:138298719224768] Logging re-enabled
+[2026-03-02 10:36:25] [INFO] [single] [125497871689536] Single thread test started
+[2026-03-02 10:36:25] [INFO] [single] [125497871689536] Success message
+[2026-03-02 10:36:25] [WARNING] [single] [125497871689536] Warning message
+[2026-03-02 10:36:25] [ERROR] [single] [125497871689536] Error message
+[2026-03-02 10:36:25] [INFO] [single] [125497871689536] Logging re-enabled
+[2026-03-02 10:38:42] [INFO] [single] [136731627145024] Single thread test started
+[2026-03-02 10:38:42] [INFO] [single] [136731627145024] Success message
+[2026-03-02 10:38:42] [WARNING] [single] [136731627145024] Warning message
+[2026-03-02 10:38:42] [ERROR] [single] [136731627145024] Error message
+[2026-03-02 10:38:42] [INFO] [single] [136731627145024] Logging re-enabled

@@ -1,218 +1,377 @@
-# Многопоточный асинхронный логгер для C++
+# Asynchronous C++ Logger
 
-## Оглавление
+Header-only, thread-safe asynchronous logging library for C++17/20.
+One include — no build step required.
 
-- [Описание](#описание)
-- [Особенности реализации](#особенности-реализации)
-- [Требования](#требования)
-- [Сборка](#сборка)
-- [Использование](#использование)
-- [API](#api)
-- [Примеры](#примеры)
-- [Тестирование](#тестирование)
+---
 
-## Описание
+## Features
 
-Профессиональная реализация многопоточного асинхронного логгера на C++. Логгер обеспечивает высокопроизводительную запись логов в файл с поддержкой конкурентного доступа из multiple потоков.
+- **Header-only** — add `include/` to your include path and you are done
+- **Asynchronous** — producer threads never wait for I/O; a single worker thread drains the queue
+- **Pluggable sinks** — write to a file, console, rotating files, daily files, or keep the last N messages in memory
+- **Pluggable formatters** — pattern-based (`[%Y-%m-%d %H:%M:%S] [%l] %v`) or JSON
+- **Level filtering** — per-logger and per-sink thresholds
+- **Contextual logging** — attach key-value pairs to a scope with `WithContext()`
+- **Duration tracing** — measure and log elapsed time with `TraceDuration()`
+- **Convenience macros** — `LOGGER_INFO(...)`, `LOGGER_ERROR(...)`, etc.
+- **C++20 `std::source_location`** — file, line, and function captured automatically when available
 
-## Особенности реализации
+## Requirements
 
-- **Асинхронная запись**: Записи логов буферизуются и записываются в отдельном потоке
-- **Потокобезопасность**: Полная поддержка многопоточной среды
-- **Гибкая конфигурация**: Возможность динамического изменения файла лога
-- **Типизированные сообщения**: Поддержка различных уровней логирования
-- **Временные метки**: Автоматическое добавление временных меток с часовыми поясами
-- **Управление состоянием**: Возможность включения/выключения логирования
+| Item | Minimum |
+|---|---|
+| C++ standard | C++17 (C++20 recommended) |
+| CMake | 3.14+ (optional) |
+| Platforms | Linux, macOS, Windows |
 
-## Требования
+## Build & Install
 
-- Компилятор C++17 или новее
-- CMake 3.10+
-- Поддерживаемые платформы: Linux, Windows, macOS
-
-## Сборка
-### Прямая компиляция
+### Direct compilation
 
 ```bash
-g++ -std=c++17 -pthread -O2 logger.cpp time_utils.cpp main.cpp -o logger
+# Your project only needs -Iinclude; no extra .cpp files to compile
+g++ -std=c++17 -pthread -O2 -Iinclude main.cpp -o my_app
 ```
 
-## Использование
-### Базовое использование
+### CMake (FetchContent)
+
+```cmake
+include(FetchContent)
+FetchContent_Declare(logger GIT_REPOSITORY https://github.com/yourname/multithreaded-logger.git)
+FetchContent_MakeAvailable(logger)
+
+target_link_libraries(my_app PRIVATE logger::logger)
+```
+
+### CMake (subdirectory)
+
+```cmake
+add_subdirectory(multithreaded-logger)
+target_link_libraries(my_app PRIVATE logger::logger)
+```
+
+---
+
+## Quick Start
 
 ```cpp
-#include "logger.hpp"
+#include <logger.hpp>
 
 int main() {
-    // Создание логгера с указанием файла
-    Logger logger("application.log");
-    
-    // Запись сообщений разных типов
-    logger.logInfo("Приложение запущено");
-    logger.logSuccess("Операция выполнена успешно");
-    logger.logWarning("Обнаружены нестандартные настройки");
-    logger.logError("Ошибка подключения к базе данных");
-    
-    return 0;
+    auto& log = logger::Logger::GetDefault();
+    log.AddSink(std::make_shared<logger::ConsoleSink>());
+    log.SetLevel(logger::Level::kTrace);
+
+    log.Info("Application started");
+    log.Warning("Low disk space: {} MB free", 128);
+    log.Error("Connection refused");
 }
 ```
 
-### Использование синглтона
+Output:
 
-```cpp
-#include "logger.hpp"
-
-int main() {
-    // Получение экземпляра логгера
-    Logger& logger = Logger::getInstance("app.log");
-    
-    logger.logInfo("Использование синглтона для глобального доступа");
-    
-    return 0;
-}
+```
+[2024-01-15 14:30:25] [INFO]    [default] [1402567] Application started
+[2024-01-15 14:30:25] [WARNING] [default] [1402567] Low disk space: {} MB free
+[2024-01-15 14:30:25] [ERROR]   [default] [1402567] Connection refused
 ```
 
-## API
+---
 
-### Основные методы
-#### Конструкторы и деструкторы
-
-```cpp
-// Создание логгера с указанием пути к файлу
-explicit Logger(const std::string& file_path = "log.txt");
-
-// Получение экземпляра синглтона
-static Logger& getInstance();
-static Logger& getInstance(const std::string& file_path);
-```
-
-#### Методы логирования
+## Log Levels
 
 ```cpp
-// Основной метод логирования
-void log(MESSAGE_TYPE message_type, const std::string& message);
-
-// Специализированные методы
-void logInfo(const std::string& message);
-void logWarning(const std::string& message);
-void logError(const std::string& message);
-void logSuccess(const std::string& message);
-```
-
-#### Управление состоянием
-
-```cpp
-// Включение/выключение логирования
-void enable();
-void disable();
-bool isEnabled() const;
-
-// Управление файлом лога
-void setFilePath(const std::string& new_path);
-std::string getFilePath() const;
-```
-
-### Типы сообщений
-
-```cpp
-enum class MESSAGE_TYPE {
-    SUCCESS,  // Успешные операции
-    ERROR,    // Ошибки
-    WARNING,  // Предупреждения
-    INFO      // Информационные сообщения
+namespace logger {
+enum class Level : uint8_t {
+    kTrace    = 0,   // verbose diagnostics
+    kDebug    = 1,   // development info
+    kInfo     = 2,   // normal operations  (default)
+    kWarning  = 3,   // non-critical issues
+    kError    = 4,   // recoverable errors
+    kCritical = 5,   // severe failures
+    kOff      = 6    // disable all output
 };
+}
 ```
 
-## Примеры
-
-### Многопоточное использование
+Set the minimum level on the logger (primary gate, applied before the message enters the queue) and optionally on each sink (secondary gate):
 
 ```cpp
-#include "logger.hpp"
+log.SetLevel(logger::Level::kDebug);           // logger filter
+my_file_sink->SetLevel(logger::Level::kError); // sink filter — only errors to file
+```
+
+---
+
+## Sinks
+
+All sinks are in `include/logger/sinks/`. Attach them with `Logger::AddSink()`.
+If no formatter is set on the sink, `PatternFormatter` with the default pattern is assigned automatically.
+
+### `FileSink` — write to a file
+
+```cpp
+// Append mode (default)
+auto sink = std::make_shared<logger::FileSink>("app.log");
+
+// Truncate on open
+auto sink = std::make_shared<logger::FileSink>("app.log", /*append=*/false);
+
+log.AddSink(sink);
+```
+
+### `ConsoleSink` — colour output to stdout / stderr
+
+Messages at `kWarning` and above go to `stderr`; the rest go to `stdout`.
+
+```cpp
+auto sink = std::make_shared<logger::ConsoleSink>();          // ANSI colours on
+auto sink = std::make_shared<logger::ConsoleSink>(false);     // plain text
+
+log.AddSink(sink);
+```
+
+### `RotatingFileSink` — size-based log rotation
+
+```cpp
+// Rotate "app.log" every 10 MB, keep up to 5 archived copies
+auto sink = std::make_shared<logger::RotatingFileSink>("app.log", 10*1024*1024, 5);
+log.AddSink(sink);
+```
+
+Rotation renames `app.log → app.1.log → … → app.5.log`; the oldest file is deleted.
+
+### `DailyFileSink` — one file per calendar day
+
+```cpp
+auto sink = std::make_shared<logger::DailyFileSink>("app.log");
+log.AddSink(sink);
+// Day 1: app_2024-01-15.log  |  Day 2: app_2024-01-16.log
+```
+
+### `RingBufferSink` — keep the last N messages in memory
+
+Primarily used in tests to assert that specific messages were logged.
+
+```cpp
+auto sink = std::make_shared<logger::RingBufferSink>(64); // retain last 64 messages
+log.AddSink(sink);
+
+// ... run code ...
+log.Flush();
+
+assert(sink->Contains("connection established"));
+auto messages = sink->GetMessages(); // vector<LogMessage>
+```
+
+### `NullSink` — discard all output
+
+```cpp
+log.AddSink(std::make_shared<logger::NullSink>()); // useful for benchmarks
+```
+
+### Multiple sinks simultaneously
+
+```cpp
+log.AddSink(std::make_shared<logger::ConsoleSink>());
+log.AddSink(std::make_shared<logger::FileSink>("app.log"));
+log.AddSink(std::make_shared<logger::DailyFileSink>("archive.log"));
+// All three receive every message above the logger's level.
+```
+
+---
+
+## Formatters
+
+Attach a formatter to a sink before (or instead of) calling `AddSink()`:
+
+```cpp
+auto sink = std::make_shared<logger::FileSink>("app.log");
+sink->SetFormatter(std::make_unique<logger::JsonFormatter>());
+log.AddSink(sink); // AddSink will not override the formatter you set
+```
+
+### `PatternFormatter` — human-readable text
+
+```cpp
+// Custom pattern
+sink->SetFormatter(std::make_unique<logger::PatternFormatter>(
+    "[%Y-%m-%d %H:%M:%S.%S] [%L] %v  (%n/%t)"));
+```
+
+**Pattern tokens:**
+
+| Token | Output |
+|---|---|
+| `%Y` | Four-digit year |
+| `%m` | Month (01–12) |
+| `%d` | Day (01–31) |
+| `%H` | Hour (00–23) |
+| `%M` | Minute (00–59) |
+| `%S` | Second (00–60) |
+| `%t` | Thread ID |
+| `%l` | Level name (`WARNING`) |
+| `%L` | Level initial (`W`) |
+| `%v` | Message text |
+| `%n` | Logger name |
+| `%@` | `file.cpp:42` (source location) |
+| `%!` | Function name |
+| `%%` | Literal `%` |
+
+**Default pattern:** `[%Y-%m-%d %H:%M:%S] [%l] [%n] [%t] %v`
+
+### `JsonFormatter` — structured output for log aggregators
+
+```cpp
+sink->SetFormatter(std::make_unique<logger::JsonFormatter>());
+```
+
+```json
+{"timestamp":"2024-01-15T11:30:25Z","level":"ERROR","logger":"auth","thread":"14023","message":"token expired"}
+```
+
+---
+
+## Multiple Logger Instances
+
+The global default logger is available via `GetDefault()`. Named instances let different subsystems log independently:
+
+```cpp
+// Global logger (console output)
+auto& glog = logger::Logger::GetDefault();
+glog.AddSink(std::make_shared<logger::ConsoleSink>());
+
+// Per-subsystem logger (file output)
+logger::Logger db_log("database");
+db_log.AddSink(std::make_shared<logger::FileSink>("db.log"));
+db_log.SetLevel(logger::Level::kWarning);
+
+db_log.Info("ignored — below threshold");
+db_log.Error("connection pool exhausted"); // written to db.log
+```
+
+Replace the default logger (useful in tests):
+
+```cpp
+auto test_logger = std::make_shared<logger::Logger>("test");
+auto sink = std::make_shared<logger::RingBufferSink>(256);
+test_logger->AddSink(sink);
+
+logger::Logger::SetDefault(test_logger);
+// Now LOGGER_INFO() etc. go to the ring buffer
+```
+
+---
+
+## Contextual Logging
+
+`WithContext()` returns a `ScopeLogger` that prepends `[key=value]` pairs to every message:
+
+```cpp
+void HandleRequest(logger::Logger& log, int req_id, const std::string& user) {
+    auto scope = logger::WithContext(log, {{"req", std::to_string(req_id)},
+                                          {"user", user}});
+    scope.Info("processing started");
+    scope.Error("permission denied");
+}
+// [req=42] [user=alice] processing started
+// [req=42] [user=alice] permission denied
+```
+
+---
+
+## Duration Tracing
+
+`TraceDuration()` returns a RAII guard that logs elapsed milliseconds when it leaves scope:
+
+```cpp
+{
+    auto t = logger::TraceDuration(log, "database query");
+    // ... query code ...
+} // INFO: "database query took 5ms"
+```
+
+---
+
+## Overflow Policy
+
+When the internal queue is full (default capacity 8192), one of three policies applies:
+
+```cpp
+log.SetOverflowPolicy(logger::OverflowPolicy::kBlock);        // wait for space (default)
+log.SetOverflowPolicy(logger::OverflowPolicy::kDiscardNew);   // drop the incoming message
+log.SetOverflowPolicy(logger::OverflowPolicy::kDiscardOldest);// evict oldest, push new
+```
+
+---
+
+## Convenience Macros
+
+Include `<logger/macros.hpp>` (already included by the umbrella `<logger.hpp>`):
+
+```cpp
+LOGGER_TRACE("entering loop");
+LOGGER_DEBUG("value = " + std::to_string(x));
+LOGGER_INFO("server listening on port 8080");
+LOGGER_WARNING("retry attempt " + std::to_string(n));
+LOGGER_ERROR("file not found: " + path);
+LOGGER_CRITICAL("out of memory — aborting");
+```
+
+All macros forward to `Logger::GetDefault()`. Disable all logging at compile time:
+
+```cpp
+#define LOGGER_DISABLE
+#include <logger.hpp>  // all macros become no-ops
+```
+
+On C++20, source location (`file`, `line`, `function`) is captured automatically.
+On C++17, pass it explicitly via `Log()` or use the macros (they inject `__FILE__`/`__LINE__`/`__func__`).
+
+---
+
+## Multithreaded Example
+
+```cpp
+#include <logger.hpp>
 #include <thread>
 #include <vector>
 
-void workerFunction(int id, Logger& logger) {
-    for (int i = 0; i < 3; ++i) {
-        logger.logInfo("Поток " + std::to_string(id) + 
-                      ", итерация " + std::to_string(i));
+void worker(int id, logger::Logger& log) {
+    for (int i = 0; i < 5; ++i) {
+        log.Info("thread=" + std::to_string(id) + " step=" + std::to_string(i));
     }
-    logger.logSuccess("Поток " + std::to_string(id) + " завершен");
 }
 
 int main() {
-    Logger logger("multithread.log");
+    logger::Logger log("main");
+    log.AddSink(std::make_shared<logger::FileSink>("multithread.log"));
+    log.SetLevel(logger::Level::kTrace);
+
     std::vector<std::thread> threads;
-    
-    // Запуск нескольких потоков
     for (int i = 0; i < 4; ++i) {
-        threads.emplace_back(workerFunction, i, std::ref(logger));
+        threads.emplace_back(worker, i, std::ref(log));
     }
-    
-    // Ожидание завершения всех потоков
-    for (auto& t : threads) {
-        t.join();
-    }
-    
-    return 0;
+    for (auto& t : threads) t.join();
+
+    log.Flush(); // wait for all messages to reach the file
 }
 ```
 
-### Динамическое изменение конфигурации
+---
 
-```cpp
-#include "logger.hpp"
-
-int main() {
-    Logger logger("initial.log");
-    
-    logger.logInfo("Запись в начальный файл");
-    
-    // Смена файла лога во время выполнения
-    logger.setFilePath("new_logfile.log");
-    logger.logInfo("Запись в новый файл");
-    
-    // Временное отключение логирования
-    logger.disable();
-    logger.logInfo("Это сообщение не будет записано");
-    
-    logger.enable();
-    logger.logInfo("Логирование снова включено");
-    
-    return 0;
-}
-```
-
-## Формат вывода
-
-```text
-[2024-01-15T14:30:25+03:00] [SUCCESS] [Thread:139862316267392] Программа успешно запущена
-[2024-01-15T14:30:25+03:00] [INFO] [Thread:139862316267392] Загрузка конфигурации
-[2024-01-15T14:30:25+03:00] [WARNING] [Thread:139862316267392] Не найдены настройки
-[2024-01-15T14:30:25+03:00] [ERROR] [Thread:139862316307264] Ошибка подключения
-```
-
-Каждая запись содержит:
-- Временную метку в формате ISO 8601 с часовым поясом
-- Тип сообщения (SUCCESS, ERROR, WARNING, INFO)
-- Идентификатор потока
-- Текст сообщения
-
-## Тестирование
-
-Проект включает тестовую программу, демонстрирующую различные сценарии использования:
-
-- Тестирование в однопоточном режиме 
-- Многопоточное тестирование с конкурентным доступом
-- Тестирование смены файла лога во время выполнения
-
-Для запуска тестов:
+## Running Tests
 
 ```bash
-./logger
+# CMake
+cmake -S . -B build -DLOGGER_BUILD_TESTS=ON
+cmake --build build
+ctest --test-dir build --output-on-failure
+
+# Direct
+g++ -std=c++17 -pthread -O2 -Iinclude tests/test_logger.cpp -o test_logger
+./test_logger
 ```
 
-После выполнения будут созданы файлы:
-- `test.log` - результаты однопоточного тестирования
-- `multithread.log` - результаты многопоточного тестирования
-- `new_file.log` - результаты тестирования смены файла
+The test suite covers single-thread, multi-thread, level filtering, multiple sinks, overflow policies, rotating files, formatter output, contextual logging, and duration tracing — no external framework required.
