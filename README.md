@@ -38,7 +38,7 @@ g++ -std=c++17 -pthread -O2 -Iinclude main.cpp -o my_app
 
 ```cmake
 include(FetchContent)
-FetchContent_Declare(logger GIT_REPOSITORY https://github.com/yourname/multithreaded-logger.git)
+FetchContent_Declare(logger GIT_REPOSITORY https://github.com/cpprismic/async-sink.git)
 FetchContent_MakeAvailable(logger)
 
 target_link_libraries(my_app PRIVATE logger::logger)
@@ -73,7 +73,7 @@ Output:
 
 ```
 [2024-01-15 14:30:25] [INFO]    [default] [1402567] Application started
-[2024-01-15 14:30:25] [WARNING] [default] [1402567] Low disk space: {} MB free
+[2024-01-15 14:30:25] [WARNING] [default] [1402567] Low disk space: 128 MB free
 [2024-01-15 14:30:25] [ERROR]   [default] [1402567] Connection refused
 ```
 
