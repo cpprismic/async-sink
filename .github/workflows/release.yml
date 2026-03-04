@@ -1,0 +1,31 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build library archive
+        run: |
+          VERSION="${GITHUB_REF_NAME}"
+          PREFIX="async-sink-${VERSION}/"
+          git archive --worktree-attributes \
+            --prefix="${PREFIX}" \
+            "${VERSION}" \
+            | gzip > "async-sink-${VERSION}.tar.gz"
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: async-sink-*.tar.gz
+          generate_release_notes: true
