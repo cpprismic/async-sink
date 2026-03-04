@@ -1,0 +1,6 @@
+{"timestamp":"2026-03-04T12:00:00Z","level":"TRACE","logger":"app","thread":"140234567890","message":"trace message"}
+{"timestamp":"2026-03-04T12:00:00Z","level":"DEBUG","logger":"app","thread":"140234567890","message":"debug message"}
+{"timestamp":"2026-03-04T12:00:00Z","level":"INFO","logger":"app","thread":"140234567890","message":"server started"}
+{"timestamp":"2026-03-04T12:00:01Z","level":"WARNING","logger":"app","thread":"140234567890","message":"high memory usage"}
+{"timestamp":"2026-03-04T12:00:02Z","level":"ERROR","logger":"app","thread":"140234567890","message":"connection refused"}
+{"timestamp":"2026-03-04T12:00:03Z","level":"CRITICAL","logger":"app","thread":"140234567890","message":"out of memory"}

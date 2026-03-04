@@ -1,5 +1,7 @@
 # Asynchronous C++ Logger
 
+![CI](https://github.com/cpprismic/async-sink/actions/workflows/ci.yml/badge.svg)
+
 Header-only, thread-safe asynchronous logging library for C++17/20.
 One include — no build step required.
 
@@ -64,7 +66,7 @@ int main() {
     log.SetLevel(logger::Level::kTrace);
 
     log.Info("Application started");
-    log.Warning("Low disk space: {} MB free", 128);
+    log.Warning("Low disk space: " + std::to_string(128) + " MB free");
     log.Error("Connection refused");
 }
 ```
@@ -375,3 +377,20 @@ g++ -std=c++17 -pthread -O2 -Iinclude tests/test_logger.cpp -o test_logger
 ```
 
 The test suite covers single-thread, multi-thread, level filtering, multiple sinks, overflow policies, rotating files, formatter output, contextual logging, and duration tracing — no external framework required.
+
+CI runs automatically on every push and pull request to `main`, testing both C++17 and C++20.
+
+---
+
+## Examples
+
+The `examples/` directory contains a runnable demo (`demo.cpp`) and sample output files under `examples/output/` showing every formatter and feature:
+
+| File | What it shows |
+|---|---|
+| `default.log` | Default `PatternFormatter` with all six log levels |
+| `custom_pattern.log` | Short-token pattern (`%L`, `%n/%t`, `%@`) |
+| `json.log` | `JsonFormatter` — one JSON object per line |
+| `multithread.log` | Interleaved output from concurrent threads |
+| `context.log` | `WithContext()` key-value prefixes |
+| `duration.log` | `TraceDuration` elapsed-time output |

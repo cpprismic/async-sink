@@ -14,6 +14,7 @@ out/
 
 # Результаты тестов
 *.log
+!examples/output/*.log
 *.tap
 *.trs
 Testing/
@@ -22,6 +23,10 @@ coverage/
 *.gcda
 *.gcno
 *.gcov
+
+# Built demo/test binaries (Linux, no extension)
+logger_demo
+test_logger
 
 # IDE
 .vscode/

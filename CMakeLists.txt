@@ -28,7 +28,7 @@ endif()
 # ── Demo (main.cpp) ────────────────────────────────────────────────────────────
 option(LOGGER_BUILD_DEMO "Build logger demo" ON)
 if(LOGGER_BUILD_DEMO)
-    add_executable(logger_demo main.cpp)
+    add_executable(logger_demo examples/demo.cpp)
     target_link_libraries(logger_demo PRIVATE logger::logger)
     target_compile_features(logger_demo PRIVATE cxx_std_17)
 endif()

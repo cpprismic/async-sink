@@ -1,0 +1,6 @@
+[2026-03-04 12:00:00] [TRACE]    [app] [140234567890] trace message
+[2026-03-04 12:00:00] [DEBUG]    [app] [140234567890] debug message
+[2026-03-04 12:00:00] [INFO]     [app] [140234567890] info message
+[2026-03-04 12:00:00] [WARNING]  [app] [140234567890] warning message
+[2026-03-04 12:00:00] [ERROR]    [app] [140234567890] error message
+[2026-03-04 12:00:00] [CRITICAL] [app] [140234567890] critical message

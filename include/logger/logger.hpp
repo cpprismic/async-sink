@@ -351,24 +351,24 @@ private:
         FlushAllSinks();
     }
 
-    static constexpr std::size_t kMaxQueueSize = 8192; ///< Queue capacity before overflow policy kicks in
+    static constexpr std::size_t kMaxQueueSize = 8192;                  ///< Queue capacity before overflow policy kicks in
 
-    std::string           name_;                                   ///< Logger instance name (appears as %n in patterns)
-    std::atomic<Level>    level_{Level::kInfo};                    ///< Minimum level accepted by EnqueueMessage()
-    std::atomic<bool>     enabled_{true};                          ///< Master switch; when false all messages are dropped
-    std::atomic<bool>     shutdown_{false};                        ///< Set by destructor to stop WorkerThread()
+    std::string           name_;                                        ///< Logger instance name (appears as %n in patterns)
+    std::atomic<Level>    level_{Level::kInfo};                         ///< Minimum level accepted by EnqueueMessage()
+    std::atomic<bool>     enabled_{true};                               ///< Master switch; when false all messages are dropped
+    std::atomic<bool>     shutdown_{false};                             ///< Set by destructor to stop WorkerThread()
 
-    std::queue<LogMessage>    queue_;                              ///< Pending messages awaiting dispatch
-    std::mutex                queue_mutex_;                        ///< Guards queue_; also used by condition_
-    std::condition_variable   condition_;                          ///< Wakes WorkerThread() when queue_ is non-empty or shutdown_
+    std::queue<LogMessage>    queue_;                                   ///< Pending messages awaiting dispatch
+    std::mutex                queue_mutex_;                             ///< Guards queue_; also used by condition_
+    std::condition_variable   condition_;                               ///< Wakes WorkerThread() when queue_ is non-empty or shutdown_
     OverflowPolicy            overflow_policy_{OverflowPolicy::kBlock}; ///< Action taken when queue_ reaches kMaxQueueSize
-    std::atomic<uint64_t>     enqueued_{0};                        ///< Monotonic count of messages accepted by EnqueueMessage()
-    std::atomic<uint64_t>     processed_{0};                       ///< Monotonic count of messages dispatched by DispatchMessage()
+    std::atomic<uint64_t>     enqueued_{0};                             ///< Monotonic count of messages accepted by EnqueueMessage()
+    std::atomic<uint64_t>     processed_{0};                            ///< Monotonic count of messages dispatched by DispatchMessage()
 
-    std::vector<std::shared_ptr<Sink>> sinks_;                     ///< Registered output destinations
-    std::mutex                         sinks_mutex_;               ///< Guards sinks_ for AddSink() / ClearSinks() / DispatchMessage()
+    std::vector<std::shared_ptr<Sink>> sinks_;                          ///< Registered output destinations
+    std::mutex                         sinks_mutex_;                    ///< Guards sinks_ for AddSink() / ClearSinks() / DispatchMessage()
 
-    std::thread               worker_thread_;                      ///< Background thread that drains queue_ to sinks
+    std::thread               worker_thread_;                           ///< Background thread that drains queue_ to sinks
 };
 
 // ── Contextual logging ────────────────────────────────────────────────────────

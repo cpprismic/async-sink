@@ -1,0 +1,8 @@
+Pattern: [%L] [%n/%t] %@ %v
+
+[T] [app/140234567890] main.cpp:10 trace message
+[D] [app/140234567890] main.cpp:11 debug message
+[I] [app/140234567890] main.cpp:12 info message
+[W] [app/140234567890] main.cpp:13 warning message
+[E] [app/140234567890] main.cpp:14 error message
+[C] [app/140234567890] main.cpp:15 critical message

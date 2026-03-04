@@ -93,8 +93,8 @@ public:
 private:
     /// @brief Combines the raw @c LogMessage with its formatted representation.
     struct Entry {
-        LogMessage  msg;       ///< Raw log event (level, timestamp, thread, text, …)
-        std::string formatted; ///< Output of the attached @c Formatter for this event
+        LogMessage  msg;          ///< Raw log event (level, timestamp, thread, text, …)
+        std::string formatted;    ///< Output of the attached @c Formatter for this event
     };
 
     std::size_t        capacity_; ///< Maximum number of entries before eviction

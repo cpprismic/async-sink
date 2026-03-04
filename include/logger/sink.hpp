@@ -77,7 +77,7 @@ protected:
         return msg.message;
     }
 
-    std::atomic<Level>         level_{Level::kTrace}; ///< Minimum accepted level; kTrace = pass all
+    std::atomic<Level>         level_{Level::kTrace};  ///< Minimum accepted level; kTrace = pass all
     std::unique_ptr<Formatter> formatter_;             ///< Attached formatter; set by Logger::AddSink()
 };
 

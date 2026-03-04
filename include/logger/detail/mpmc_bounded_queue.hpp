@@ -109,13 +109,13 @@ public:
         return (t - h) & mask_;
     }
 
-    static constexpr std::size_t kCapacity = Capacity; ///< Compile-time capacity of the queue
+    static constexpr std::size_t kCapacity = Capacity;    ///< Compile-time capacity of the queue
 
 private:
-    static constexpr std::size_t mask_ = Capacity - 1; ///< Bitmask for fast modulo (power-of-2)
+    static constexpr std::size_t mask_ = Capacity - 1;    ///< Bitmask for fast modulo (power-of-2)
 
-    alignas(64) std::atomic<std::size_t> head_{0}; ///< Consumer read index; cache-line isolated
-    alignas(64) std::atomic<std::size_t> tail_{0}; ///< Producer write index; cache-line isolated
+    alignas(64) std::atomic<std::size_t> head_{0};        ///< Consumer read index; cache-line isolated
+    alignas(64) std::atomic<std::size_t> tail_{0};        ///< Producer write index; cache-line isolated
 
     std::array<T, Capacity>                 buffer_{};    ///< Fixed-size element storage
     std::array<std::atomic<bool>, Capacity> published_{}; ///< Per-slot flags: true = slot is ready to consume

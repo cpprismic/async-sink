@@ -6,7 +6,6 @@
 #include <iomanip>
 #include <ctime>
 
-/// @file time_utils.hpp
 /// @brief Thread-safe time conversion and formatting utilities used internally
 ///        by formatters and sinks.
 ///

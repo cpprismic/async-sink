@@ -1,0 +1,6 @@
+[2026-03-04 12:00:00] [INFO]     [api] [140234001] [req=42] [user=alice] processing started
+[2026-03-04 12:00:00] [ERROR]    [api] [140234001] [req=42] [user=alice] permission denied
+[2026-03-04 12:00:00] [INFO]     [api] [140234001] [req=43] [user=bob] processing started
+[2026-03-04 12:00:00] [INFO]     [api] [140234001] [req=43] [user=bob] processing complete
+[2026-03-04 12:00:01] [WARNING]  [api] [140234001] [req=44] [user=carol] rate limit approaching
+[2026-03-04 12:00:01] [CRITICAL] [api] [140234001] [req=44] [user=carol] rate limit exceeded
